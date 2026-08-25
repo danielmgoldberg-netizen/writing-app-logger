@@ -10,27 +10,24 @@ export default async function handler(req, res) {
     const AIRTABLE_BASE_ID  = process.env.AIRTABLE_BASE_ID;
     const AIRTABLE_TABLE_ID = process.env.AIRTABLE_TABLE_ID;
 
-    // For GET requests, send a minimal hardcoded test record
-    // to isolate whether the problem is the data or the field config
+    // GET: quick connection test
     const isTest = req.method === "GET";
     const record = isTest ? {
-      "Student Name": "Test",
-      "Submission": "Test sentence."
+      "Student Name": "CONNECTION TEST",
+      "Submission":   "Test sentence."
     } : (() => {
       let fields = req.body;
       if (typeof fields === "string") fields = JSON.parse(fields);
       return {
-        "Student Name":    String(fields["Student Name"]    || ""),
-        "Teacher":         String(fields["Teacher"]         || ""),
-        "Timestamp":       String(fields["Timestamp"]       || ""),
-        "App":             String(fields["App"]             || ""),
-        "Text Title":      String(fields["Text Title"]      || ""),
-        "Attempt Number":  Number(fields["Attempt Number"]  || 0),
-        "Submission":      String(fields["Submission"]      || ""),
-        "Total Score":     Number(fields["Total Score"]     || 0),
-        "Max Score":       Number(fields["Max Score"]       || 0),
-        "Session Best":    Number(fields["Session Best"]    || 0),
-        "Score Breakdown": String(fields["Score Breakdown"] || "")
+        "Student Name": String(fields["Student Name"] || ""),
+        "Teacher":      String(fields["Teacher"]      || ""),
+        "Timestamp":    String(fields["Timestamp"]    || ""),
+        "App":          String(fields["App"]          || ""),
+        "Text Title":   String(fields["Text Title"]   || ""),
+        "Attempts":     Number(fields["Attempts"]     || 0),
+        "Submission":   String(fields["Submission"]   || ""),
+        "Score":        Number(fields["Score"]        || 0),
+        "Max Score":    Number(fields["Max Score"]    || 0)
       };
     })();
 
@@ -50,7 +47,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       return res.status(response.status).json({ error: data, sentRecord: record });
     }
-    return res.status(200).json({ ok: true, sentRecord: record });
+    return res.status(200).json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
