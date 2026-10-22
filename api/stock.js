@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const ticker = String(req.query.ticker || "PEP").trim().toUpperCase();
 
     const response = await fetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1wk&range=ytd`,
+      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1wk&range=1y`,
       // Yahoo rejects requests without a browser-like User-Agent
       { headers: { "User-Agent": "Mozilla/5.0" } }
     );
