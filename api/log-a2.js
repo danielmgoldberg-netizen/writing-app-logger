@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     const AIRTABLE_TOKEN    = process.env.AIRTABLE_TOKEN;
     const AIRTABLE_BASE_ID  = process.env.AIRTABLE_BASE_ID_A2;
-    const AIRTABLE_TABLE_ID = process.env.AIRTABLE_TABLE_ID_A2_ECONOMICS;
+    const AIRTABLE_TABLE_ID = process.env.AIRTABLE_TABLE_ID_A2_BUSINESS;
 
     // GET: quick connection test
     const isTest = req.method === "GET";
