@@ -5,31 +5,42 @@ export default async function handler(req, res) {
 
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  try {
-    const AIRTABLE_TOKEN    = process.env.AIRTABLE_TOKEN;
-    const AIRTABLE_BASE_ID  = process.env.AIRTABLE_BASE_ID_A2;
-    const AIRTABLE_TABLE_ID = process.env.AIRTABLE_TABLE_ID_A2_BUSINESS;
+  const AIRTABLE_TOKEN    = process.env.AIRTABLE_TOKEN;
+  const AIRTABLE_BASE_ID  = process.env.AIRTABLE_BASE_ID_A2;
+  const AIRTABLE_TABLE_ID = process.env.AIRTABLE_TABLE_ID_A2_BUSINESS;
 
-    // GET: quick connection test
-    const isTest = req.method === "GET";
-    const record = isTest ? {
-      "Student Name": "CONNECTION TEST",
-      "Submission":   "Test sentence."
-    } : (() => {
-      let fields = req.body;
-      if (typeof fields === "string") fields = JSON.parse(fields);
-      return {
-        "Student Name": String(fields["Student Name"] || ""),
-        "Teacher":      String(fields["Teacher"]      || ""),
-        "Timestamp":    String(fields["Timestamp"]    || ""),
-        "App":          String(fields["App"]          || ""),
-        "Text Title":   String(fields["Text Title"]   || ""),
-        "Attempts":     Number(fields["Attempts"]     || 0),
-        "Submission":   String(fields["Submission"]   || ""),
-        "Score":        Number(fields["Score"]        || 0),
-        "Max Score":    Number(fields["Max Score"]    || 0)
-      };
-    })();
+  // GET: health check only. Does NOT call Airtable, so opening this URL in a
+  // browser (or a bot crawling it) costs no API calls.
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      configured: Boolean(AIRTABLE_TOKEN && AIRTABLE_BASE_ID && AIRTABLE_TABLE_ID)
+    });
+  }
+
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+  try {
+    let fields = req.body;
+    if (typeof fields === "string") fields = JSON.parse(fields || "{}");
+    fields = fields || {};
+
+    // Nothing worth storing: skip without spending an Airtable call.
+    if (!fields["Student Name"]) {
+      return res.status(200).json({ ok: true, skipped: true });
+    }
+
+    const record = {
+      "Student Name": String(fields["Student Name"]),
+      "Teacher":      String(fields["Teacher"]      || ""),
+      "Timestamp":    String(fields["Timestamp"]    || ""),
+      "App":          String(fields["App"]          || ""),
+      "Text Title":   String(fields["Text Title"]   || ""),
+      "Attempts":     Number(fields["Attempts"]     || 0),
+      "Submission":   String(fields["Submission"]   || ""),
+      "Score":        Number(fields["Score"]        || 0),
+      "Max Score":    Number(fields["Max Score"]    || 0)
+    };
 
     const response = await fetch(
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`,
